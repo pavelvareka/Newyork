@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<title>New York — plán po dnech</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0d10;
+    --surface:#14171c;
+    --surface2:#1b2027;
+    --border:#262b33;
+    --text:#eae7e0;
+    --muted:#9aa2ad;
+    --accent:#f0b429;      /* taxi yellow */
+    --accent2:#6cc9c9;     /* liberty patina teal, lightened for contrast */
+    --warn:#e2574c;
+    --ok:#5fb37a;
+    --film:#c98ef0;        /* violet — filmová/seriálová místa */
+  }
+  *{box-sizing:border-box;}
+  html{ scroll-behavior:smooth; background:#0b0d10; }
+  html, body{
+    background-color:#0b0d10 !important;
+    color:#eae7e0 !important;
+  }
+  body{
+    margin:0;
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  h1,h2,h3{ font-family:'Source Serif 4', Georgia, serif; font-weight:700; margin:0 0 .3em; }
+  a{ color:var(--accent2); text-decoration:none; }
+  a:hover{ text-decoration:underline; }
+  .wrap{ max-width:880px; margin:0 auto; padding:28px 20px 90px; }
+
+  header.hero{ padding:38px 0 18px; border-bottom:1px solid var(--border); margin-bottom:26px; }
+  .eyebrow{ text-transform:uppercase; letter-spacing:.14em; font-size:.72rem; color:var(--accent); font-weight:600; margin-bottom:10px;}
+  header.hero h1{ font-size:2.5rem; margin-bottom:6px; }
+  .subtitle{ color:var(--muted); font-size:1.02rem; }
+  .meta{ margin-top:16px; font-size:.95rem; color:var(--text); }
+  .meta b{ color:var(--accent); }
+
+  .cardgrid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:22px 0 8px; }
+  @media(max-width:640px){ .cardgrid{ grid-template-columns:1fr; } }
+  .infocard{ background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px 20px; }
+  .infocard h3{ font-size:1rem; color:var(--accent); margin-bottom:10px; display:flex; align-items:center; gap:8px;}
+  .infocard .row{ display:flex; justify-content:space-between; gap:10px; font-size:.92rem; padding:5px 0; border-bottom:1px dashed var(--border); }
+  .infocard .row:last-child{ border-bottom:none; }
+  .infocard .row span:first-child{ color:var(--muted); }
+  .flightleg{ display:flex; justify-content:space-between; align-items:center; margin:8px 0; }
+  .flightleg .time{ font-size:1.5rem; font-weight:700; font-family:'Source Serif 4',serif; }
+  .flightleg .code{ font-size:.78rem; color:var(--muted); }
+  .flightleg .arrow{ color:var(--accent2); font-size:1.1rem; }
+
+  .legend{ display:flex; flex-wrap:wrap; gap:10px; margin:22px 0 30px; font-size:.82rem; align-items:center; }
+  .legend span{ padding:4px 10px; border-radius:20px; border:1px solid var(--border); color:var(--muted); }
+  .legend .kl{border-color:#3e8e8e55;color:#7fc5c5;}
+  .legend .vy{border-color:#f0b42955;color:#f0c968;}
+  .legend .na{border-color:#e2884c55;color:#eba071;}
+  .legend .nr{border-color:#e2574c55;color:#ee8a82;}
+  .legend .fm{border-color:#c98ef055;color:#d9aef5;}
+
+  nav.daynav{ position:sticky; top:0; z-index:10; background:rgba(11,13,16,.92); backdrop-filter:blur(6px); padding:10px 0; margin-bottom:10px; border-bottom:1px solid var(--border); display:flex; gap:6px; overflow-x:auto; }
+  nav.daynav button{ flex:0 0 auto; background:var(--surface); color:var(--muted); border:1px solid var(--border); border-radius:20px; padding:7px 14px; font-size:.82rem; font-family:'Inter',sans-serif; cursor:pointer; white-space:nowrap; }
+  nav.daynav button.active{ background:var(--accent); color:#1a1400; border-color:var(--accent); font-weight:600; }
+
+  section.day{ display:none; padding-top:8px; }
+  section.day.active{ display:block; }
+  .day-kicker{ color:var(--muted); font-size:.85rem; margin-bottom:4px; }
+  .day h2{ font-size:1.65rem; margin-bottom:10px; }
+  .daymeta{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; font-size:.82rem; color:var(--muted); margin-bottom:18px; }
+  .tempo-badge{ padding:3px 11px; border-radius:20px; font-weight:600; }
+  .tempo-Klidný{ background:#3e8e8e22; color:#7fc5c5; }
+  .tempo-Vyvážený{ background:#f0b42922; color:#f0c968; }
+  .tempo-Nabitý{ background:#e2884c22; color:#eba071; }
+  .tempo-Náročný{ background:#e2574c22; color:#ee8a82; }
+
+  .box{ border-radius:12px; padding:14px 16px; font-size:.88rem; margin:14px 0; border:1px solid; }
+  .box.tip{ background:#3e8e8e14; border-color:#3e8e8e40; }
+  .box.tip b{ color:#7fc5c5; }
+  .box.warn{ background:#e2574c14; border-color:#e2574c40; }
+  .box.warn b{ color:#ee8a82; }
+
+  ol.stops{ list-style:none; margin:20px 0 0; padding:0; border-left:2px solid var(--border); }
+  .stop{ position:relative; padding:2px 0 22px 26px; }
+  .stop::before{ content:attr(data-n); position:absolute; left:-15px; top:0; width:28px; height:28px; background:var(--surface2); border:1px solid var(--border); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:.74rem; color:var(--accent); font-weight:700; }
+  .stop.film::before{ color:var(--film); border-color:#c98ef066; }
+  .stop .time{ font-family:'Source Serif 4',serif; font-weight:700; font-size:1.1rem; }
+  .stop .name{ font-size:1.05rem; font-weight:600; margin-top:2px; }
+  .stop .tags{ font-size:.78rem; color:var(--muted); margin:3px 0 6px; }
+  .stop .tags.film{ color:#d9aef5; }
+  .stop .desc{ font-size:.92rem; color:#cfccc4; }
+  .stop .desc b.movie{ color:#d9aef5; font-weight:600; }
+  .stop .links{ margin-top:7px; font-size:.8rem; }
+  .stop .links a{ margin-right:12px; }
+  .hop{ padding-left:26px; font-size:.78rem; color:var(--muted); margin:-14px 0 10px; }
+
+  .ticket-embed{ background:var(--surface2); border:1px dashed var(--accent); border-radius:12px; padding:16px; margin:14px 0 22px 26px; font-size:.88rem; }
+  .ticket-embed h4{ margin:0 0 8px; color:var(--accent); font-family:'Source Serif 4',serif; font-size:1.05rem; }
+
+  footer{ margin-top:60px; padding-top:30px; border-top:1px solid var(--border); }
+  footer h2{ font-size:1.3rem; margin-top:34px; }
+  footer p, footer li{ font-size:.9rem; color:#cfccc4; }
+  footer ul{ padding-left:20px; }
+  table.costs{ width:100%; border-collapse:collapse; font-size:.85rem; margin:14px 0; }
+  table.costs th, table.costs td{ text-align:left; padding:8px 10px; border-bottom:1px solid var(--border); }
+  table.costs th{ color:var(--accent); font-weight:600; }
+  .small{ font-size:.8rem; color:var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="eyebrow">New York · Diana &amp; Pavel</div>
+  <h1>New York — plán po dnech</h1>
+  <div class="subtitle">Manhattan &amp; Brooklyn · pár · známá místa z filmů a seriálů · Yankee Stadium</div>
+  <div class="meta"><b>Pá 21. – čt 27. srpna 2026</b> · 6 nocí, základna Midtown Manhattan (Times Square)</div>
+</header>
+
+<div class="cardgrid">
+  <div class="infocard">
+    <h3>✈️ Letenky</h3>
+    <div class="flightleg">
+      <div><div class="code">Cesta tam · 21. 8. 2026</div><div class="time">14:00</div><div class="code">PRG · Václav Havel Airport</div></div>
+      <div class="arrow">✈ →</div>
+      <div style="text-align:right;"><div class="code">&nbsp;</div><div class="time">19:15</div><div class="code">EWR · Newark Liberty Intl</div></div>
+    </div>
+    <div class="flightleg" style="border-top:1px dashed var(--border); padding-top:10px;">
+      <div><div class="code">Cesta zpět · 27. 8. 2026</div><div class="time">20:30</div><div class="code">JFK · John F Kennedy Intl</div></div>
+      <div class="arrow">✈ →</div>
+      <div style="text-align:right;"><div class="code">&nbsp;</div><div class="time">13:05</div><div class="code">PRG · Václav Havel Airport</div></div>
+    </div>
+    <div class="row" style="margin-top:8px;"><span>Cestující</span><span>Diana Varekova, Pavel Vareka</span></div>
+  </div>
+
+  <div class="infocard">
+    <h3>🏨 Ubytování</h3>
+    <div class="row"><span>Hotel</span><span>Home2 Suites by Hilton — Times Square ★★★</span></div>
+    <div class="row"><span>Termín</span><span>pá 21. 8. – čt 27. 8. 2026 (6 nocí)</span></div>
+    <div class="row"><span>Check-in / Check-out</span><span>od 16:00 / do 11:00</span></div>
+    <div class="row"><span>Adresa</span><span>150 W 48th Street, New York, NY 10017</span></div>
+  </div>
+</div>
+
+<div class="cardgrid" style="grid-template-columns:1fr;">
+  <div class="infocard">
+    <h3>⚾ Vstupenky — Yankees vs. Astros</h3>
+    <div class="row"><span>Zápas</span><span>New York Yankees vs. Houston Astros</span></div>
+    <div class="row"><span>Datum</span><span>st 26. 8. 2026, 19:05</span></div>
+    <div class="row"><span>Místo</span><span>Yankee Stadium, Bronx</span></div>
+    <div class="row"><span>Sedadla</span><span>Sekce 227B, řada 2 · 2 vstupenky</span></div>
+  </div>
+</div>
+
+<div class="legend">
+  <span class="kl">Klidný</span><span class="vy">Vyvážený</span><span class="na">Nabitý</span><span class="nr">Náročný</span>
+  <span class="fm">🎬 filmové/seriálové místo</span>
+  <span class="small" style="margin-left:auto;">Klikni na den → skočíš na program</span>
+</div>
+
+<nav class="daynav" id="daynav">
+  <button data-day="1" class="active">Den 1 · Pá 21.8</button>
+  <button data-day="2">Den 2 · So 22.8</button>
+  <button data-day="3">Den 3 · Ne 23.8</button>
+  <button data-day="4">Den 4 · Po 24.8</button>
+  <button data-day="5">Den 5 · Út 25.8</button>
+  <button data-day="6">Den 6 · St 26.8</button>
+  <button data-day="7">Den 7 · Čt 27.8</button>
+</nav>
+
+<!-- ============ DEN 1 ============ -->
+<section class="day active" id="day-1">
+  <div class="day-kicker">Den 1 z 7 · Přílet</div>
+  <h2>pá 21. 8. — Přílet a Times Square</h2>
+  <div class="daymeta"><span class="tempo-badge tempo-Klidný">Klidný den</span><span>4 zastávky</span><span>Uber z EWR ~55 min</span></div>
+
+  <div class="box tip"><b>Tip:</b> Hned na letišti si v aplikaci Uber/Lyft objednejte odvoz — z Newarku do Midtownu jezdí i sdílené shuttly (např. GO Airlink), ale s kufry po dlouhém letu je Uber pohodlnější. Počítejte s mýtným (~$20) v ceně.</div>
+
+  <ol class="stops">
+    <li class="stop" data-n="1">
+      <div class="time">19:15</div>
+      <div class="name">Přistání — Newark Liberty Intl (EWR)</div>
+      <div class="tags">Letiště · pasová kontrola a zavazadla ~45 min</div>
+      <div class="desc">Po pasové kontrole a vyzvednutí zavazadel (terminál B/C) hledejte značení „Ground Transportation" — odsud se objednávají Ubery na vyhrazeném stanovišti.</div>
+    </li>
+    <div class="hop">↓ 25 km · 45–60 min · Uber (~$70–90 s mýtným, večerní provoz)</div>
+    <li class="stop" data-n="2">
+      <div class="time">20:15</div>
+      <div class="name">Uber do hotelu</div>
+      <div class="tags">Přejezd · Uber</div>
+      <div class="desc">Tunel Lincoln nebo most George Washingtona podle dopravní situace — necháme na řidiči.</div>
+    </li>
+    <li class="stop" data-n="3">
+      <div class="time">21:15</div>
+      <div class="name">Home2 Suites by Hilton — Times Square</div>
+      <div class="tags">Hotel · 150 W 48th Street</div>
+      <div class="desc">Recepce je 24/7, takže pozdní check-in není problém.</div>
+      <div class="links"><a href="https://maps.apple.com/?q=Home2%20Suites%20by%20Hilton%20New%20York%20Times%20Square&ll=40.7614,-73.9843" target="_blank">Mapy</a><a href="https://www.google.com/maps/search/?api=1&query=Home2+Suites+by+Hilton+New+York+Times+Square" target="_blank">Google</a></div>
+    </li>
+    <div class="hop">↓ 0,4 km · 6 min pěšky</div>
+    <li class="stop film" data-n="4">
+      <div class="time">21:45</div>
+      <div class="name">Times Square v noci</div>
+      <div class="tags film">🎬 Spider-Man, Vanilla Sky, Půlnoční kovboj, Silvestr v NY</div>
+      <div class="desc">Nejnasvícenější křižovatka světa, otevřeno pořád. Byla to filmová kulisa nesčetněkrát — od <b class="movie">Spider-Mana</b> přes <b class="movie">Vanilla Sky</b> (slavná scéna prázdného náměstí) po novoroční koule z televizních přenosů. Po dlouhém letu ideální rozchodit nohy a naladit se na město.</div>
+      <div class="links"><a href="https://maps.apple.com/?q=Times%20Square&ll=40.7580,-73.9855" target="_blank">Mapy</a><a href="https://www.google.com/maps/search/?api=1&query=Times+Square+New+York" target="_blank">Google</a></div>
+    </li>
+  </ol>
+</section>
+
+<!-- ============ DEN 2 ============ -->
+<section class="day" id="day-2">
+  <div class="day-kicker">Den 2 z 7 · Dolní Manhattan a Brooklyn Bridge</div>
+  <h2>so 22. 8. — Socha Svobody, nákupy, Ghostbusters, Brooklyn Bridge</h2>
+  <div class="daymeta"><span class="tempo-badge tempo-Náročný">Náročný den</span><span>8 zastávek</span><span>hodně chůze — pohodlné boty</span></div>
+
+  <div class="box warn"><b>Pozor:</b> Vstupenky na trajekt k Soše Svobody (Statue Cruises) si kupte předem online — v srpnu bývají ranní sloty vyprodané i týden dopředu. Na trajekt je bezpečnostní kontrola jako na letišti.</div>
+
+  <ol class="stops">
+    <li class="stop" data-n="1">
+      <div class="time">08:30</div>
+      <div class="name">Metro na Battery Park</div>
+      <div class="tags">Přejezd · metro linka 4/5 do Bowling Green</div>
+      <div class="desc">Vyplatí se koupit 7denní neomezenou OMNY/MetroCard rovnou dnes ráno.</div>
+    </li>
+    <div class="hop">↓ 12 km · 30 min metrem</div>
+    <li class="stop film" data-n="2">
+      <div class="time">09:15</div>
+      <div class="name">Trajekt kolem Sochy Svobody</div>
+      <div class="tags film">Vyhlídka · ~24 $/os. · 🎬 Ghostbusters II, Planeta opic, Cloverfield</div>
+      <div class="desc">Trajekt jezdí z Battery Parku kolem Liberty Island. Socha, kterou <b class="movie">Ghostbusters II</b> rozchodí ulicemi, kterou najdou trosečníci v závěru <b class="movie">Planety opic</b> a která se v <b class="movie">Cloverfieldu</b> kutálí do Manhattanu — z vody je nejlepší úhel na celou postavu i s pochodní.</div>
+      <div class="links"><a href="https://maps.apple.com/?q=Statue%20of%20Liberty&ll=40.6892,-74.0445" target="_blank">Mapy</a><a href="https://www.google.com/maps/search/?api=1&query=Statue+of+Liberty" target="_blank">Google</a></div>
+    </li>
+    <div class="hop">↓ trajekt zpět · 20 min, pak pěšky</div>
+    <li class="stop" data-n="3">
+      <div class="time">11:30</div>
+      <div class="name">Oběd u Battery Parku</div>
+      <div class="tags">Restaurace · ~25 $/os.</div>
+      <div class="desc">Kolem Battery Parku a dlážděné Stone Street je spousta bister s venkovním posezením.</div>
+    </li>
+    <div class="hop">↓ 0,8 km · 12 min pěšky</div>
+    <li class="stop" data-n="4">
+      <div class="time">12:30</div>
+      <div class="name">Wall Street a Charging Bull</div>
+      <div class="tags">Městská čtvrť</div>
+      <div class="desc">Sochy Charging Bull a Fearless Girl, budova newyorské burzy a úzká kaňonovitá Wall Street mezi mrakodrapy.</div>
+      <div class="links"><a href="https://maps.apple.com/?q=Charging%20Bull&ll=40.7056,-74.0134" target="_blank">Mapy</a><a href="https://www.google.com/maps/search/?api=1&query=Charging+Bull+Wall+Street" target="_blank">Google</a></div>
+    </li>
+    <div class="hop">↓ 0,9 km · 12 min pěšky</div>
+    <li class="stop" data-n="5">
+      <div class="time">13:30</div>
+      <div class="name">9/11 Memorial &amp; Museum</div>
+      <div class="tags">Památník a muzeum · vstup ~33 $/os.</div>
+      <div class="desc">Dva bazény na půdorysech Twin Towers a podzemní muzeum s osobními příběhy 11. září. Počítejte s 1,5–2 hodinami. Vstupenky předem online.</div>
+      <div class="links"><a href="https://maps.apple.com/?q=9%2F11%20Memorial&ll=40.7115,-74.0134" target="_blank">Mapy</a><a href="https://www.google.com/maps/search/?api=1&query=9/11+Memorial+Museum" target="_blank">Google</a></div>
+    </li>
+    <div class="hop">↓ 0,4 km · 5 min pěšky</div>
+    <li class="stop" data-n="6">
+      <div class="time">16:00</div>
+      <div class="name">Century 21 — nákupy</div>
+      <div class="tags">Obchodní dům · sleva 30–70 % na značky</div>
+      <div class="desc">Newyorská legenda přímo naproti bývalému WTC — slevové značkové oblečení (Coach, Polo Ralph Lauren, Michael Kors, Calvin Klein a spousta dalších) za zlomek běžné ceny. Počítejte s 45–60 minutami.</div>
+      <div class="links"><a href="https://maps.apple.com/?q=Century%2021%20Department%20Store&ll=40.7106,-74.0113" target="_blank">Mapy</a><a href="https://www.google.com/maps/search/?api=1&query=Century+21+Department+Store+New+York" target="_blank">Google</a></div>
+    </li>
+    <div class="hop">↓ 2 km · 25 min pěšky / 10 min Uberem</div>
+    <li class="stop film" data-n="7">
+      <div class="time">17:15</div>
+      <div class="name">Hasičárna z Krotitelů duchů</div>
+      <div class="tags film">Tribeca · 🎬 Ghostbusters (1984)</div>
+      <div class="desc">Hook &amp; Ladder Company 8 na rohu North Moore a Varick Street — reálná hasičská stanice, jejíž fasáda posloužila jako sídlo <b class="movie">Krotitelů duchů</b>. Rychlá fotka na cestě do Brooklynu, hasiči jsou na fanoušky zvyklí.</div>
+      <div class="links"><a href="https://maps.apple.com/?q=Hook%20%26%20Ladder%20Company%208%20Ghostbusters%20Firehouse&ll=40.7195,-74.0057" target="_blank">Mapy</a><a href="https://www.google.com/maps/search/?api=1&query=Ghostbusters+Firehouse+Tribeca" target="_blank">Google</a></div>
+    </li>
+    <div class="hop">↓ 1,4 km · 20 min pěšky</div>
+    <li class="stop" data-n="8">
+      <div class="time">18:00</div>
+      <div class="name">Brooklyn Bridge — přechod pěšky</div>
+      <div class="tags">Most · zdarma</div>
+      <div class="desc">Nejikoničtější procházka New Yorku, cca 30–40 minut. Nejlepší světlo je hodinu před západem slunce (v srpnu kolem 19:45). Pozor na cyklostezku, je oddělená od chodníku.</div>
+      <div class="links"><a href="https://maps.apple.com/?q=Brooklyn%20Bridge&ll=40.7061,-73.9969" target="_blank">Mapy</a><a href="https://www.google.com/maps/search/?api=1&query=Brooklyn+Bridge" target="_blank">Google</a></div>
+    </li>
+    <div class="hop">↓ 1,3 km · 18 min pěšky přes most</div>
+    <li class="stop" data-n="9">
+      <div class="time">19:15</div>
+      <div class="name">DUMBO — večeře s výhledem</div>
+      <div class="tags">Brooklyn · ~40 $/os.</div>
+      <div class="desc">Slavný pohled na Manhattan Bridge z Washington Street. Grimaldi's nebo Juliana's na pizzu, Time Out Market na cokoli rychlejšího.</div>
+      <div class="links"><a href="https://maps.apple.com/?q=DUMBO%20Brooklyn&ll=40.7033,-73.9903" target="_blank">Mapy</a><a href="https://www.google.com/maps/search/?api=1&query=DUMBO+Brooklyn" target="_blank">Google</a></div>
+    </li>
+  </ol>
+</section>
+
+<!-- ============ DEN 3 ============ -->
+<section class="day" id="day-3">
+  <div class="day-kicker">Den 3 z 7 · Central Park a Midtown</div>
+  <h2>ne 23. 8. — Central Park, Dakota, Plaza a Top of the Rock</h2>
+  <div class="daymeta"><span class="tempo-badge tempo-Vyvážený">Vyvážený den</span><span>9 zastávek</span><span>víc času v Central Parku, bez muzeí</span></div>
+
+  <div class="box tip"><b>Tip:</b> Dnešní den je hlavně o pomalé procházce parkem — žádný spěch, žádné rezervace na čas. Top of the Rock je jediná věc, kterou má smysl mít předem koupenou online (slot těsně před západem slunce, kolem 19:30).</div>
+
+  <ol class="stops">
+    <li class="stop" data-n="1">
+      <div class="time">09:15</div>
+      <div class="name">Vstup do parku u Columbus Circle</div>
+      <div class="tags">Přejezd · pěšky/metrem 10 min</div>
+      <div class="desc">Nejkratší přístup do Central Parku od hotelu.</div>
+    </li>
+    <div class="hop">↓ 1 km · 15 min pěšky</div>
+    <li class="stop film" data-n="2">
+      <div class="time">09:45</div>
+      <div class="name">Strawberry Fields a Dakota Building</div>
+      <div class="tags film">🎬 Rosemary's Baby, John Lennon</div>
+      <div class="desc">Strawberry Fields je památník Johna Lennona s mozaikou „Imagine" — přímo naproti přes ulici stojí <b class="movie">Dakota Building</b>, kde Lennon bydlel a kde se natáčel hororový klasik <b class="movie">Rosemary's Baby</b>. Jedna z nejfotografovanějších budov New Yorku.</div>
+      <div class="links"><a href="https://maps.apple.com/?q=Strawberry%20Fields%20Central%20Park&ll=40.7756,-73.9754" target="_blank">Mapy</a><a href="https://www.google.com/maps/search/?api=1&query=Strawberry+Fields+Central+Park" target="_blank">Google</a></div>
+    </li>
+    <div class="hop">↓ 1,5 km · 20 min pěšky</div>
+    <li class="stop film" data-n="3">
+      <div class="time">11:00</div>
+      <div class="name">Bethesda Terrace a Bow Bridge</div>
+      <div class="tags film">🎬 Enchanted, Autumn in New York, Madagascar</div>
+      <div class="desc">Kašna s andělem na terase a železný obloukový most nad jezerem — kulisa desítek filmů, od animovaného <b class="movie">Madagaskaru</b> po romantický <b class="movie">Enchanted</b>. U jezera se dá i půjčit veslice a projet se sami — kdo chce, klidně si tu dá klidnou hodinku na vodě.</div>
+      <div class="links"><a href="https://maps.apple.com/?q=Bethesda%20Terrace%20Central%20Park&ll=40.7735,-73.9707" target="_blank">Mapy</a><a href="https://www.google.com/maps/search/?api=1&query=Bethesda+Terrace+Central+Park" target="_blank">Google</a></div>
+    </li>
+    <div class="hop">↓ 0,7 km · 10 min pěšky</div>
+    <li class="stop" data-n="4">
+      <div class="time">12:15</div>
+      <div class="name">The Mall a Central Park Zoo</div>
+      <div class="tags">Park · zoo ~15 $/os.</div>
+      <div class="desc">Literary Walk — stinná alej starých jilmů, jedna z nejfotogeničtějších cest parku — a hned vedle malá, útulná Central Park Zoo (tuleni, lední medvědi, opičí pavilon). Příjemná, nenáročná procházka místo dalšího muzea.</div>
+      <div class="links"><a href="https://maps.apple.com/?q=Central%20Park%20Zoo&ll=40.7679,-73.9719" target="_blank">Mapy</a><a href="https://www.google.com/maps/search/?api=1&query=Central+Park+Zoo" target="_blank">Google</a></div>
+    </li>
+    <div class="hop">↓ 0,6 km · 8 min pěšky</div>
+    <li class="stop" data-n="5">
+      <div class="time">13:30</div>
+      <div class="name">Oběd u Central Park South</div>
+      <div class="tags">Restaurace · ~30 $/os.</div>
+      <div class="desc">Bistra kolem 59. ulice, hned u jižního konce parku.</div>
+    </li>
+    <div class="hop">↓ 0,3 km · 4 min pěšky</div>
+    <li class="stop film" data-n="6">
+      <div class="time">14:45</div>
+      <div class="name">The Plaza Hotel</div>
+      <div class="tags film">🎬 Sám doma 2, Velký Gatsby, Snídaně u Tiffanyho</div>
+      <div class="desc">Přepychový hotel z roku 1907 na rohu Central Parku — přesně tam, kde v <b class="movie">Sám doma 2</b> Kevin bydlí sám na patře, a kde se odehrávají scény z <b class="movie">Velkého Gatsbyho</b>. Vstupní hala je volně přístupná, stačí projít se dovnitř podívat.</div>
+      <div class="links"><a href="https://maps.apple.com/?q=The%20Plaza%20Hotel&ll=40.7645,-73.9744" target="_blank">Mapy</a><a href="https://www.google.com/maps/search/?api=1&query=The+Plaza+Hotel+New+York" target="_blank">Google</a></div>
+    </li>
+    <div class="hop">↓ 0,9 km · 12 min pěšky</div>
+    <li class="stop" data-n="7">
+      <div class="time">16:00</div>
+      <div class="name">Fifth Avenue a katedrála St. Patrick's</div>
+      <div class="tags">Ulice a katedrála</div>
+      <div class="desc">Vlajkové obchody (Tiffany, Saks) a neogotická katedrála uprostřed mrakodrapů — kontrast, který funguje jen v New Yorku.</div>
+      <div class="links"><a href="https://maps.apple.com/?q=St.%20Patrick's%20Cathedral&ll=40.7585,-73.9759" target="_blank">Mapy</a><a href="https://www.google.com/maps/search/?api=1&query=St+Patricks+Cathedral+NYC" target="_blank">Google</a></div>
+    </li>
+    <div class="hop">↓ 0,3 km · 5 min pěšky</div>
+    <li class="stop" data-n="8">
+      <div class="time">19:30</div>
+      <div class="name">Top of the Rock — západ slunce</div>
+      <div class="tags">Vyhlídka · ~40 $/os.</div>
+      <div class="desc">70. patro Rockefeller Center. Otevřená terasa bez mříží, výhled na Central Park i Empire State Building — nejlepší panorama celé dovolené.</div>
+      <div class="links"><a href="https://maps.apple.com/?q=Top%20of%20the%20Rock&ll=40.7590,-73.9787" target="_blank">Mapy</a><a href="https://www.google.com/maps/search/?api=1&query=Top+of+the+Rock" target="_blank">Google</a></div>
+    </li>
+    <div class="hop">↓ 0,9 km · 12 min pěšky</div>
+    <li class="stop" data-n="9">
+      <div class="time">21:00</div>
+      <div class="name">Večeře v Hell's Kitchen</div>
+      <div class="tags">Restaurace · ~35 $/os.</div>
+      <div class="desc">Deset minut od hotelu, desítky kuchyní na jedné ulici (9th Avenue).</div>
+    </li>
+  </ol>
+</section>
+
+<!-- ============ DEN 4 ============ -->
+<section class="day" id="day-4">
+  <div class="day-kicker">Den 4 z 7 · Flatiron, Chelsea a West Village</div>
+  <h2>po 24. 8. — Flatiron, High Line, Friends a Sex and the City</h2>
+  <div class="daymeta"><span class="tempo-badge tempo-Nabitý">Nabitý den</span><span>7 zastávek</span><span>nejvíc filmových a seriálových míst najednou</span></div>
+
+  <div class="box tip"><b>Tip:</b> Adresy z Friends a Sex and the City jsou soukromé domy — lidé v nich opravdu bydlí. Fotka zvenku je v pohodě, jen prosím nezvonit a nechodit na verandy.</div>
+
+  <ol class="stops">
+    <li class="stop film" data-n="1">
+      <div class="time">09:30</div>
+      <div class="name">Flatiron Building</div>
+      <div class="tags film">🎬 Spider-Man (redakce Daily Bugle), Elementary</div>
+      <div class="desc">Trojúhelníková budova z roku 1902, jedna z prvních newyorských „mrakodrapových" ikon. Ve <b class="movie">Spider-Manovi</b> Sama Raimiho v ní sídlí redakce Daily Bugle. Kolem je i příjemné Madison Square Park na kávu.</div>
+      <div class="links"><a href="https://maps.apple.com/?q=Flatiron%20Building&ll=40.7411,-73.9897" target="_blank">Mapy</a><a href="https://www.google.com/maps/search/?api=1&query=Flatiron+Building" target="_blank">Google</a></div>
+    </li>
+    <div class="hop">↓ 2 km · 25 min pěšky / 10 min metrem</div>
+    <li class="stop" data-n="2">
+      <div class="time">11:30</div>
+      <div class="name">Chelsea Market — oběd</div>
+      <div class="tags">Tržnice · ~20 $/os.</div>
+      <div class="desc">Bývalá továrna na sušenky Nabisco, dnes hala plná stánků s jídlem od ústřic po tacos.</div>
+      <div class="links"><a href="https://maps.apple.com/?q=Chelsea%20Market&ll=40.7424,-74.0061" target="_blank">Mapy</a><a href="https://www.google.com/maps/search/?api=1&query=Chelsea+Market" target="_blank">Google</a></div>
+    </li>
+    <div class="hop">↓ 0,2 km · 3 min pěšky</div>
+    <li class="stop" data-n="3">
+      <div class="time">13:00</div>
+      <div class="name">High Line — procházka nad ulicemi</div>
+      <div class="tags">Park · zdarma</div>
+      <div class="desc">Bývalá nadzemní železniční trať přeměněná na 2,3 km dlouhý lineární park nad Manhattanem, s výhledy do postranních ulic i na řeku Hudson.</div>
+      <div class="links"><a href="https://maps.apple.com/?q=High%20Line%20New%20York&ll=40.7480,-74.0048" target="_blank">Mapy</a><a href="https://www.google.com/maps/search/?api=1&query=High+Line+New+York" target="_blank">Google</a></div>
+    </li>
+    <div class="hop">↓ 2,1 km · 30 min pěšky po High Line</div>
+    <li class="stop" data-n="4">
+      <div class="time">14:30</div>
+      <div class="name">Hudson Yards a Vessel</div>
+      <div class="tags">Vyhlídka</div>
+      <div class="desc">Konec High Line vyústí přímo na náměstí s bronzovou strukturou Vessel a moderní architekturou Hudson Yards.</div>
+      <div class="links"><a href="https://maps.apple.com/?q=Hudson%20Yards&ll=40.7538,-74.0022" target="_blank">Mapy</a><a href="https://www.google.com/maps/search/?api=1&query=Hudson+Yards" target="_blank">Google</a></div>
+    </li>
+    <div class="hop">↓ 3,5 km · 20 min Uberem/metrem</div>
+    <li class="stop film" data-n="5">
+      <div class="time">16:00</div>
+      <div class="name">Byt Friends — 90 Bedford Street</div>
+      <div class="tags film">🎬 Friends</div>
+      <div class="desc">Exteriér budovy, který je v úvodních záběrech seriálu <b class="movie">Friends</b> — interiér bytu se sice natáčel ve studiu v LA, ale tohle je „ten dům" v kolektivní paměti. Roh s kavárnou v přízemí je nejvděčnější fotka.</div>
+      <div class="links"><a href="https://maps.apple.com/?q=90%20Bedford%20Street%20New%20York&ll=40.7318,-74.0055" target="_blank">Mapy</a><a href="https://www.google.com/maps/search/?api=1&query=90+Bedford+Street+Friends+apartment" target="_blank">Google</a></div>
+    </li>
+    <div class="hop">↓ 0,6 km · 8 min pěšky</div>
+    <li class="stop film" data-n="6">
+      <div class="time">16:40</div>
+      <div class="name">Byt Carrie Bradshaw — 66 Perry Street</div>
+      <div class="tags film">🎬 Sex and the City</div>
+      <div class="desc">Schody, na kterých Carrie tolikrát sedávala s kelímkem kávy v <b class="movie">Sex and the City</b>. O pár bloků dál na Bleecker Street je i Magnolia Bakery, kam si Carrie s Mirandou chodily pro cupcaky.</div>
+      <div class="links"><a href="https://maps.apple.com/?q=66%20Perry%20Street%20New%20York&ll=40.7351,-74.0058" target="_blank">Mapy</a><a href="https://www.google.com/maps/search/?api=1&query=66+Perry+Street+Sex+and+the+City" target="_blank">Google</a></div>
+    </li>
+    <div class="hop">↓ 0,7 km · 10 min pěšky</div>
+    <li class="stop film" data-n="7">
+      <div class="time">17:15</div>
+      <div class="name">Magnolia Bakery — svačina</div>
+      <div class="tags film">Bleecker Street · ~8 $/os. · 🎬 Sex and the City</div>
+      <div class="desc">Slavné cupcaky, kvůli kterým se před pekárnou pravidelně tvoří fronta — dík scéně ze <b class="movie">Sex and the City</b>. Malá odměna po odpolední chůzi.</div>
+      <div class="links"><a href="https://maps.apple.com/?q=Magnolia%20Bakery%20Bleecker%20Street&ll=40.7355,-74.0057" target="_blank">Mapy</a><a href="https://www.google.com/maps/search/?api=1&query=Magnolia+Bakery+Bleecker+Street" target="_blank">Google</a></div>
+    </li>
+    <div class="hop">↓ 0,4 km · 6 min pěšky</div>
+    <li class="stop" data-n="8">
+      <div class="time">19:00</div>
+      <div class="name">Večeře v Greenwich Village</div>
+      <div class="tags">Restaurace · ~35 $/os.</div>
+      <div class="desc">Uličky kolem Bleecker Street a Washington Square Park mají jedny z nejlepších italských bister ve městě — klidná tečka za náročnějším dnem.</div>
+    </li>
+  </ol>
+</section>
+
+<!-- ============ DEN 5 ============ -->
+<section class="day" id="day-5">
+  <div class="day-kicker">Den 5 z 7 · Upper West Side a Williamsburg</div>
+  <h2>út 25. 8. — Noc v muzeu, Seinfeld a Brooklyn Williamsburg</h2>
+  <div class="daymeta"><span class="tempo-badge tempo-Nabitý">Nabitý den</span><span>6 zastávek</span><span>metro linka L</span></div>
+
+  <ol class="stops">
+    <li class="stop film" data-n="1">
+      <div class="time">09:30</div>
+      <div class="name">American Museum of Natural History</div>
+      <div class="tags film">Muzeum · ~28 $/os. · 🎬 Noc v muzeu</div>
+      <div class="desc">Jediné muzeum v plánu — a stojí to za to. Kosterní sály dinosaurů a planetárium Hayden, přesně tam, kde ožívají exponáty v <b class="movie">Noc v muzeu</b>. Počítejte s 2 hodinami.</div>
+      <div class="links"><a href="https://maps.apple.com/?q=American%20Museum%20of%20Natural%20History&ll=40.7813,-73.9740" target="_blank">Mapy</a><a href="https://www.google.com/maps/search/?api=1&query=American+Museum+of+Natural+History" target="_blank">Google</a></div>
+    </li>
+    <div class="hop">↓ 4 km · 15 min metrem/Uberem</div>
+    <li class="stop" data-n="2">
+      <div class="time">12:15</div>
+      <div class="name">Oběd na Upper West Side</div>
+      <div class="tags">Restaurace · ~25 $/os.</div>
+      <div class="desc">Klidnější rezidenční čtvrť s dobrými bagely a delikatesami.</div>
+    </li>
+    <div class="hop">↓ 15 km · 45 min metrem (linka 1 → L z Union Square)</div>
+    <li class="stop" data-n="3">
+      <div class="time">14:15</div>
+      <div class="name">Williamsburg — Bedford Avenue</div>
+      <div class="tags">Brooklyn · zdarma</div>
+      <div class="desc">Hipsterská čtvrť plná streetartu, vintage obchodů a kaváren — jiná tvář New Yorku než Manhattan.</div>
+      <div class="links"><a href="https://maps.apple.com/?q=Bedford%20Avenue%20Williamsburg&ll=40.7173,-73.9573" target="_blank">Mapy</a><a href="https://www.google.com/maps/search/?api=1&query=Bedford+Avenue+Williamsburg" target="_blank">Google</a></div>
+    </li>
+    <div class="hop">↓ 1,2 km · 18 min pěšky</div>
+    <li class="stop" data-n="4">
+      <div class="time">16:00</div>
+      <div class="name">Brooklyn Brewery — ochutnávka</div>
+      <div class="tags">Pivovar · ~15 $/os.</div>
+      <div class="desc">Malý řemeslný pivovar s otevřenou halou, kde se dá posedět i bez prohlídky.</div>
+      <div class="links"><a href="https://maps.apple.com/?q=Brooklyn%20Brewery&ll=40.7215,-73.9573" target="_blank">Mapy</a><a href="https://www.google.com/maps/search/?api=1&query=Brooklyn+Brewery" target="_blank">Google</a></div>
+    </li>
+    <div class="hop">↓ 1,5 km · 22 min pěšky</div>
+    <li class="stop" data-n="5">
+      <div class="time">18:15</div>
+      <div class="name">Domino Park — západ slunce nad Manhattanem</div>
+      <div class="tags">Park · zdarma</div>
+      <div class="desc">Park na místě bývalé cukrovarské továrny přímo u vody, s výhledem přes East River na siluetu Manhattanu.</div>
+      <div class="links"><a href="https://maps.apple.com/?q=Domino%20Park&ll=40.7147,-73.9634" target="_blank">Mapy</a><a href="https://www.google.com/maps/search/?api=1&query=Domino+Park+Brooklyn" target="_blank">Google</a></div>
+    </li>
+    <div class="hop">↓ 0,4 km · 6 min pěšky</div>
+    <li class="stop" data-n="6">
+      <div class="time">19:15</div>
+      <div class="name">Večeře ve Williamsburgu</div>
+      <div class="tags">Restaurace · ~40 $/os.</div>
+      <div class="desc">Čtvrť má jednu z nejzajímavějších gastro scén v Brooklynu. Zpět na Manhattan Uberem, cca 20 minut.</div>
+    </li>
+  </ol>
+</section>
+
+<!-- ============ DEN 6 ============ -->
+<section class="day" id="day-6">
+  <div class="day-kicker">Den 6 z 7 · Harlem a Yankee Stadium</div>
+  <h2>st 26. 8. — Klidné dopoledne a Yankees vs. Astros</h2>
+  <div class="daymeta"><span class="tempo-badge tempo-Klidný">Klidný den</span><span>6 zastávek</span><span>zápas 19:05</span></div>
+
+  <div class="box warn"><b>Pozor:</b> Yankee Stadium má přísnou bag policy — povolené jsou jen malé průhledné tašky nebo bez tašky. Přijďte aspoň hodinu před začátkem, brány se obvykle otevírají 90 minut předem.</div>
+
+  <ol class="stops">
+    <li class="stop" data-n="1">
+      <div class="time">10:00</div>
+      <div class="name">Volno v hotelu</div>
+      <div class="tags">Klidný start</div>
+      <div class="desc">Po pěti nabitých dnech si dopoledne nechte volnější tempo — dnešní hlavní bod je až večer.</div>
+    </li>
+    <li class="stop film" data-n="2">
+      <div class="time">11:00</div>
+      <div class="name">Harlem — 125th Street a Apollo Theater</div>
+      <div class="tags film">🎬 Showtime at the Apollo, Coming 2 America</div>
+      <div class="desc">Historické srdce afroamerické kultury New Yorku — divadlo Apollo, kde začínali Ella Fitzgerald i James Brown a kde se dodnes natáčí televizní Showtime at the Apollo.</div>
+      <div class="links"><a href="https://maps.apple.com/?q=Apollo%20Theater&ll=40.8096,-73.9500" target="_blank">Mapy</a><a href="https://www.google.com/maps/search/?api=1&query=Apollo+Theater+Harlem" target="_blank">Google</a></div>
+    </li>
+    <div class="hop">↓ 3 km · 15 min Uberem</div>
+    <li class="stop" data-n="3">
+      <div class="time">13:00</div>
+      <div class="name">Oběd</div>
+      <div class="tags">Restaurace · ~25 $/os.</div>
+      <div class="desc">Harlem je proslulý soul food kuchyní — vyzkoušejte fried chicken se sladkými bramborami.</div>
+    </li>
+    <li class="stop" data-n="4">
+      <div class="time">14:30</div>
+      <div class="name">Volno / balení na zítřejší odlet</div>
+      <div class="tags">Hotel</div>
+      <div class="desc">Klidná pauza před večerním programem, dobrá chvíle sbalit část zavazadel dopředu.</div>
+    </li>
+    <div class="hop">↓ 6 km · 30–40 min metrem (linka 4) nebo Uberem</div>
+    <li class="stop" data-n="5">
+      <div class="time">17:00</div>
+      <div class="name">Cesta na Yankee Stadium, Bronx</div>
+      <div class="tags">Přejezd</div>
+      <div class="desc">Metro linka 4 jede přímo na stanici 161 St – Yankee Stadium a je spolehlivější než Uber v době před zápasem.</div>
+    </li>
+    <li class="stop" data-n="6">
+      <div class="time">17:45</div>
+      <div class="name">Okolí stadionu — atmosféra před zápasem</div>
+      <div class="tags">Bronx</div>
+      <div class="desc">Stánky se suvenýry, Billy's Sports Bar naproti stadionu na rychlé pivo, fotka u sochy.</div>
+      <div class="links"><a href="https://maps.apple.com/?q=Yankee%20Stadium&ll=40.8296,-73.9262" target="_blank">Mapy</a><a href="https://www.google.com/maps/search/?api=1&query=Yankee+Stadium" target="_blank">Google</a></div>
+    </li>
+  </ol>
+
+  <div class="ticket-embed">
+    <h4>⚾ 19:05 — New York Yankees vs. Houston Astros</h4>
+    Yankee Stadium · Sekce 227B, řada 2 (2 sedadla) · zápas by měl trvat cca 3 hodiny. Po zápase zpět stejnou linkou metra 4 — v době odchodu davu jezdí posílené soupravy.
+  </div>
+</section>
+
+<!-- ============ DEN 7 ============ -->
+<section class="day" id="day-7">
+  <div class="day-kicker">Den 7 z 7 · Odlet</div>
+  <h2>čt 27. 8. — Poslední ráno a odlet z JFK</h2>
+  <div class="daymeta"><span class="tempo-badge tempo-Klidný">Klidný den</span><span>5 zastávek</span><span>odlet 20:30</span></div>
+
+  <div class="box tip"><b>Tip:</b> Check-out je do 11:00, hotel ale běžně uschová zavazadla na recepci zdarma, takže poslední dopoledne lze strávit bez kufrů.</div>
+
+  <ol class="stops">
+    <li class="stop" data-n="1">
+      <div class="time">09:30</div>
+      <div class="name">Check-out a úschova zavazadel</div>
+      <div class="tags">Hotel</div>
+      <div class="desc">Zavazadla necháte na recepci a vyrazíte naposledy do ulic bez zátěže.</div>
+    </li>
+    <div class="hop">↓ 1 km · 15 min pěšky</div>
+    <li class="stop film" data-n="2">
+      <div class="time">10:00</div>
+      <div class="name">Grand Central Terminal</div>
+      <div class="tags film">🎬 Superman, Avengers, Madagascar</div>
+      <div class="desc">Hlavní hala s hvězdnou mapou na stropě je jedna z nejkrásnějších veřejných místností ve městě — objevila se od <b class="movie">Supermana</b> po <b class="movie">Avengers</b>, i když nikam nejedete.</div>
+      <div class="links"><a href="https://maps.apple.com/?q=Grand%20Central%20Terminal&ll=40.7527,-73.9772" target="_blank">Mapy</a><a href="https://www.google.com/maps/search/?api=1&query=Grand+Central+Terminal" target="_blank">Google</a></div>
+    </li>
+    <div class="hop">↓ 0,5 km · 8 min pěšky</div>
+    <li class="stop film" data-n="3">
+      <div class="time">10:45</div>
+      <div class="name">Bryant Park a New York Public Library</div>
+      <div class="tags film">🎬 Krotitelé duchů, Pozítří</div>
+      <div class="desc">Mramorové lvi Patience a Fortitude před vchodem do knihovny — přesně odsud v <b class="movie">Krotitelích duchů</b> vybíhá ectoplazmatická knihovnice a v <b class="movie">Pozítří</b> se tu lidé schovávají před ledovou bouří. Zelený park za rohem je poslední klidná zastávka před odletem.</div>
+      <div class="links"><a href="https://maps.apple.com/?q=Bryant%20Park&ll=40.7536,-73.9832" target="_blank">Mapy</a><a href="https://www.google.com/maps/search/?api=1&query=Bryant+Park" target="_blank">Google</a></div>
+    </li>
+    <li class="stop" data-n="4">
+      <div class="time">12:30</div>
+      <div class="name">Oběd a vyzvednutí zavazadel</div>
+      <div class="tags">Restaurace</div>
+      <div class="desc">Poslední jídlo ve městě, pak zpět do hotelu pro kufry.</div>
+    </li>
+    <div class="hop">↓ 26 km · 50–70 min · Uber (odjezd s rezervou na provoz)</div>
+    <li class="stop" data-n="5">
+      <div class="time">14:00</div>
+      <div class="name">Uber na JFK</div>
+      <div class="tags">Přejezd · ~$65–85</div>
+      <div class="desc">Na letiště počítejte s odbavením a bezpečnostní kontrolou minimálně 2,5 hodiny předem u mezinárodního letu.</div>
+    </li>
+  </ol>
+
+  <div class="ticket-embed">
+    <h4>✈️ 20:30 — Odlet JFK → Praha</h4>
+    Přílet do Prahy 13:05 místního času (přes noc, přistání již 28. 8.). Konec dovolené.
+  </div>
+</section>
+
+<footer>
+  <h2>Co si předem zarezervovat</h2>
+  <ul>
+    <li><b>Trajekt k Soše Svobody</b> — statuecruises.com, sloty se v srpnu plní i týden dopředu.</li>
+    <li><b>9/11 Memorial &amp; Museum</b> — vstupenky online na konkrétní čas.</li>
+    <li><b>Top of the Rock</b> — časový slot těsně před západem slunce, rezervace předem.</li>
+    <li><b>American Museum of Natural History</b> — vstup lze koupit online a vyhnout se frontě u pokladny.</li>
+    <li><b>7denní OMNY/MetroCard</b> — jen aktivovat kartu/telefon při prvním průchodu turniketem, žádná rezervace předem není potřeba.</li>
+  </ul>
+
+  <h2>Doprava a odhad nákladů</h2>
+  <table class="costs">
+    <tr><th>Položka</th><th>Kolik</th><th>Poznámka</th></tr>
+    <tr><td>Uber EWR → hotel</td><td>~$70–90</td><td>Večerní přílet, s mýtným</td></tr>
+    <tr><td>Uber hotel → JFK</td><td>~$65–85</td><td>Odpolední provoz, počítat s rezervou</td></tr>
+    <tr><td>7denní OMNY (2 osoby)</td><td>~$68</td><td>$34/os., neomezené jízdy metrem a autobusem</td></tr>
+    <tr><td>Trajekt k Soše Svobody</td><td>~$48</td><td>2 × $24</td></tr>
+    <tr><td>9/11 Memorial &amp; Museum</td><td>~$66</td><td>2 × $33</td></tr>
+    <tr><td>AMNH</td><td>~$56</td><td>2 × $28</td></tr>
+    <tr><td>Central Park Zoo</td><td>~$30</td><td>2 × $15</td></tr>
+    <tr><td>Top of the Rock</td><td>~$80</td><td>2 × $40, večerní slot</td></tr>
+    <tr><td>Vstupenky na baseball</td><td>zaplaceno</td><td>2 × $104 (Section 227B)</td></tr>
+  </table>
+  <p class="small">Bez jídla vychází vstupné a doprava na zhruba 420–440 $ na dvojici za celý týden.</p>
+
+  <h2>Poznámky k plánu</h2>
+  <p><b>Muzea jsou záměrně jen dvě:</b> 9/11 Memorial &amp; Museum (silný zážitek, ne klasické „muzeum") a American Museum of Natural History (díky Noci v muzeu skoro povinnost). Met i MoMA jsou vynechané, zbyl čas na procházky, nákupy a pár filmových zastávek.</p>
+  <p><b>Filmová a seriálová místa jsou spíš ochutnávka než hlavní téma</b> — nejvíc jich je den 4 (Friends, Sex and the City), jinak jsou rozeseté jako bonus mezi klasickými zastávkami (Socha Svobody, Central Park, Grand Central). Central Park den 3 je naopak záměrně bez spěchu — hlavní je tam samotná procházka a atmosféra, ne checklist.</p>
+  <p><b>Vynecháno záměrně:</b> Empire State Building (Top of the Rock dává lepší panorama i s výhledem na samotný Empire State), Coney Island (daleko, mimo trasu), muzikál na Broadwayi (dá se snadno přidat na kterýkoli volný večer — lístky Today Tix se slevou přímo na Times Square).</p>
+
+  <h2>Jak plán používat na telefonu</h2>
+  <p>Tlačítka dní nahoře přepínají program. Odkazy „Mapy" otevřou Apple Maps, „Google" otevře Google Maps s navigací. Fialový rámeček a 🎬 označují filmová a seriálová místa.</p>
+</footer>
+
+</div>
+
+<script>
+  const buttons = document.querySelectorAll('#daynav button');
+  const days = document.querySelectorAll('section.day');
+  buttons.forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      buttons.forEach(b=>b.classList.remove('active'));
+      days.forEach(d=>d.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('day-'+btn.dataset.day).classList.add('active');
+      window.scrollTo({top: document.getElementById('daynav').offsetTop - 10, behavior:'smooth'});
+    });
+  });
+</script>
+</body>
+</html>
